@@ -22,3 +22,10 @@ _testmain.go
 *.exe
 *.test
 *.prof
+
+# Config files
+*.clerk.yml
+*.clerk.yaml
+
+# Email previews
+*clerk_preview_*
