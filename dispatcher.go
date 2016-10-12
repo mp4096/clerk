@@ -70,6 +70,7 @@ func createApprovalEmail(filename string, c *Config) (*PlainEmail, error) {
 	m.FromName = c.Author.Name
 	m.FromEmail = c.Author.Email
 	m.ToEmails = c.Approval_list.Emails
+	m.BccEmails = []string{c.Author.Email}
 	m.Subject = c.Approval_list.Subject
 	// TODO: Add mustache interpolation
 	fmt.Printf("Will send to %v\n", m.ToEmails)
@@ -93,6 +94,7 @@ func createAllEmail(filename string, c *Config) (*PlainEmail, error) {
 	m.FromName = c.Author.Name
 	m.FromEmail = c.Author.Email
 	m.ToEmails = c.All_list.Emails
+	m.BccEmails = []string{c.Author.Email}
 	m.Subject = c.All_list.Subject
 	// TODO: Add mustache interpolation
 	fmt.Printf("Will send to %v\n", m.ToEmails)
@@ -115,6 +117,7 @@ func createSingleRecepientEmail(html []byte, r *Recipient, c *Config) (*PlainEma
 	m.FromName = c.Author.Name
 	m.FromEmail = c.Author.Email
 	m.ToEmails = r.Emails
+	m.BccEmails = []string{c.Author.Email}
 	m.Subject = c.Individual_lists.Subject
 	// TODO: Add mustache interpolation
 	fmt.Printf("Will send to %v\n", m.ToEmails)

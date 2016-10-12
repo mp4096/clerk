@@ -15,6 +15,7 @@ type PlainEmail struct {
 	FromName  string
 	FromEmail string
 	ToEmails  []string
+	BccEmails []string
 	Subject   string
 	Body      []byte
 }
@@ -60,7 +61,12 @@ func (m *PlainEmail) ExportHTML() []byte {
 func (m *PlainEmail) Send(sc *ServerConfig, ap *AuthPair) error {
 	server := fmt.Sprintf("%s:%d", sc.Hostname, sc.Port)
 	auth := smtp.PlainAuth("", ap.Login, ap.Password, sc.Hostname)
-	err := smtp.SendMail(server, auth, m.FromEmail, m.ToEmails, m.ExportHTML())
+	err := smtp.SendMail(server,
+		auth,
+		m.FromEmail,
+		append(m.ToEmails, m.BccEmails...),
+		m.ExportHTML(),
+	)
 	if err != nil {
 		return err
 	}
