@@ -8,10 +8,10 @@ import (
 	"github.com/russross/blackfriday"
 )
 
-// \b - word boundary
+// \W - not a word character
 // \@ - as literal
-// \w+ - at least one word character, greedily
-var userRegexp = regexp.MustCompile(`(\W)(\@\w+)`)
+// \p{L}+ - at least one Unicode word character, greedily
+var userRegexp = regexp.MustCompile(`(\W)(\@\p{L}+)`)
 
 const colorHighlighting = `$1<b><font color="#ff9933">$2</font></b>`
 
