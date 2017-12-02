@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"os"
 
-	ck "github.com/mp4096/clerk"
+	"github.com/mp4096/clerk"
 )
 
-var a ck.Action = ck.NOTHING
+var a clerk.Action = clerk.NOTHING
 var send = false
 var fs = flag.NewFlagSet("clerk", flag.ExitOnError)
 var configFilename = ""
@@ -48,9 +48,9 @@ func main() {
 
 	switch os.Args[1] {
 	case "approve":
-		a = ck.APPROVE
+		a = clerk.APPROVE
 	case "distribute":
-		a = ck.DISTRIBUTE
+		a = clerk.DISTRIBUTE
 	default:
 		fmt.Printf("%q is not valid command.\n", os.Args[1])
 		os.Exit(2)
@@ -63,7 +63,7 @@ func main() {
 	}
 
 	// TODO: Find latest Markdown file if none was specified
-	c := new(ck.Config)
+	c := new(clerk.Config)
 	errConf := c.ImportFromFile(configFilename)
 	if errConf != nil {
 		fmt.Println("Error opening config file")
@@ -73,7 +73,7 @@ func main() {
 
 	fmt.Println("Hello,", c.Author.Name)
 
-	if err := ck.ProcessFile(mdFilename, a, send, c); err != nil {
+	if err := clerk.ProcessFile(mdFilename, a, send, c); err != nil {
 		fmt.Println("Error sending email")
 		fmt.Println(err)
 		os.Exit(4)

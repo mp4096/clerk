@@ -11,22 +11,22 @@ import (
 	"github.com/howeyc/gopass"
 )
 
-type AuthPair struct {
-	Login    string
-	Password string
+type authPair struct {
+	login    string
+	password string
 }
 
 // Asks user for the login and password for the email server
-func (ap *AuthPair) Prompt() error {
+func (ap *authPair) prompt() error {
 	fmt.Printf("Login: ")
-	fmt.Scanln(&ap.Login)
+	fmt.Scanln(&ap.login)
 
 	fmt.Printf("Password: ")
 	pass, err := gopass.GetPasswd()
 	if err != nil {
 		return err
 	}
-	ap.Password = string(pass) // `pass` is already a slice
+	ap.password = string(pass) // `pass` is already a slice
 
 	return nil
 }
@@ -52,7 +52,7 @@ type emailBuilder struct {
 	notice          string
 }
 
-func New() EmailBuilder {
+func NewEmail() EmailBuilder {
 	return &emailBuilder{}
 }
 
@@ -107,7 +107,7 @@ func (eb *emailBuilder) Build() Email {
 }
 
 type Email interface {
-	Send(*EmailServer, *AuthPair) error
+	Send(*EmailServer, *authPair) error
 	OpenInBrowser(string) error
 	GetRecipients() []string
 }
@@ -118,9 +118,9 @@ type email struct {
 	body      []byte
 }
 
-func (e *email) Send(s *EmailServer, ap *AuthPair) error {
+func (e *email) Send(s *EmailServer, ap *authPair) error {
 	serverInfo := fmt.Sprintf("%s:%d", s.Hostname, s.Port)
-	auth := smtp.PlainAuth("", ap.Login, ap.Password, s.Hostname)
+	auth := smtp.PlainAuth("", ap.login, ap.password, s.Hostname)
 
 	if err := smtp.SendMail(serverInfo, auth, e.fromEmail, e.toEmails, e.body); err != nil {
 		return err

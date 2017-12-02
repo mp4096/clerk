@@ -15,7 +15,7 @@ var userRegexp = regexp.MustCompile(`(\W)(\@\p{L}+)`)
 
 const colorHighlighting = `$1<b><font color="#ff9933">$2</font></b>`
 
-func MarkdownToHTML(filename string) (string, error) {
+func markdownToHTML(filename string) (string, error) {
 	data, err := ioutil.ReadFile(filename)
 	if err != nil {
 		return "", err

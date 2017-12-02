@@ -20,12 +20,12 @@ func ProcessFile(filename string, a Action, send bool, c *Config) error {
 	}
 	context := map[string]string{"date": timestamp}
 
-	md, err := MarkdownToHTML(filename)
+	md, err := markdownToHTML(filename)
 	if err != nil {
 		return err
 	}
 
-	builder := New().AddAuthor(&c.Author).AddContent(md)
+	builder := NewEmail().AddAuthor(&c.Author).AddContent(md)
 	switch a {
 	case APPROVE:
 		builder = builder.AddRecipients(&c.Approve_list)
@@ -38,8 +38,8 @@ func ProcessFile(filename string, a Action, send bool, c *Config) error {
 
 	if send {
 		fmt.Printf("Will send to %v\n", email.GetRecipients())
-		ap := new(AuthPair)
-		ap.Prompt()
+		ap := new(authPair)
+		ap.prompt()
 		if err := email.Send(&c.Email_server, ap); err != nil {
 			return err
 		}
