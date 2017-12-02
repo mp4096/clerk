@@ -11,21 +11,13 @@ import (
 	"github.com/howeyc/gopass"
 )
 
-type PlainEmail struct {
-	FromName  string
-	FromEmail string
-	ToEmails  []string
-	BccEmails []string
-	Subject   string
-	Body      []byte
-}
-
 type AuthPair struct {
 	Login    string
 	Password string
 }
 
-func (ap *AuthPair) Read() error {
+// Asks user for the login and password for the email server
+func (ap *AuthPair) Prompt() error {
 	fmt.Printf("Login: ")
 	fmt.Scanln(&ap.Login)
 
@@ -34,49 +26,113 @@ func (ap *AuthPair) Read() error {
 	if err != nil {
 		return err
 	}
-
-	ap.Password = string(pass) // TODO: is this the best way to convert bytes to string?
+	ap.Password = string(pass) // `pass` is already a slice
 
 	return nil
 }
 
-type ServerConfig struct {
-	Hostname string
-	Port     int
+type EmailBuilder interface {
+	AddAuthor(*Author) EmailBuilder
+	AddRecipients(*Recipients) EmailBuilder
+	AddContent(string) EmailBuilder
+	FillInContext(map[string]string) EmailBuilder
+	Build() Email
 }
 
-func (m *PlainEmail) RenderMustache(context map[string]string) {
-	m.Subject = string(mustache.Render(string(m.Subject), context))
-	m.Body = []byte(mustache.Render(string(m.Body), context))
+// Email builder struct containing all the nitty-gritty details and subfields of our custom email
+type emailBuilder struct {
+	fromName        string
+	fromEmail       string
+	recipientEmails []string
+	bccEmails       []string
+	subject         string
+	salutation      string
+	headerText      string
+	mailText        string
+	notice          string
 }
 
-func (m *PlainEmail) ExportHTML() []byte {
-	fieldFrom := "From: " + m.FromName + "<" + m.FromEmail + ">\r\n"
-	fieldTo := "To: " + strings.Join(m.ToEmails, ", ") + "\r\n"
-	fieldSubject := "Subject: " + m.Subject + "\r\n"
-	mime := "MIME-version: 1.0;\r\nContent-Type: text/html; charset=\"UTF-8\";\r\n\r\n"
-	return append([]byte(fieldFrom+fieldTo+fieldSubject+mime), m.Body...)
+func New() EmailBuilder {
+	return &emailBuilder{}
 }
 
-func (m *PlainEmail) Send(sc *ServerConfig, ap *AuthPair) error {
-	server := fmt.Sprintf("%s:%d", sc.Hostname, sc.Port)
-	auth := smtp.PlainAuth("", ap.Login, ap.Password, sc.Hostname)
-	err := smtp.SendMail(server,
-		auth,
-		m.FromEmail,
-		append(m.ToEmails, m.BccEmails...),
-		m.ExportHTML(),
-	)
-	if err != nil {
+func (eb *emailBuilder) AddAuthor(a *Author) EmailBuilder {
+	eb.fromName = a.Name
+	eb.fromEmail = a.Email
+	eb.bccEmails = []string{a.Email}
+	eb.notice = a.Notice
+
+	return eb
+}
+
+func (eb *emailBuilder) AddRecipients(rs *Recipients) EmailBuilder {
+	eb.recipientEmails = rs.Emails
+	eb.subject = rs.Subject
+	eb.salutation = rs.Salutation
+	eb.headerText = rs.Text
+
+	return eb
+}
+
+func (eb *emailBuilder) AddContent(s string) EmailBuilder {
+	eb.mailText = s
+
+	return eb
+}
+
+func (eb *emailBuilder) FillInContext(context map[string]string) EmailBuilder {
+	eb.subject = mustache.Render(eb.subject, context)
+	eb.headerText = mustache.Render(eb.headerText, context)
+	eb.mailText = mustache.Render(eb.mailText, context)
+
+	return eb
+}
+
+func (eb *emailBuilder) Build() Email {
+	body := "From: " + eb.fromName + "<" + eb.fromEmail + ">\r\n"
+	body += "To: " + strings.Join(eb.recipientEmails, ", ") + "\r\n"
+	body += "Subject: " + eb.subject + "\r\n"
+	body += "MIME-version: 1.0;\r\nContent-Type: text/html; charset=\"UTF-8\";\r\n\r\n"
+	body += "<p>" + eb.salutation + "</p>\r\n"
+	body += "<p>" + eb.headerText + "</p>\r\n"
+	body += "<p>" + eb.notice + "</p>\r\n\r\n"
+	body += eb.mailText
+
+	e := new(email)
+	e.fromEmail = eb.fromEmail
+	e.toEmails = append(eb.recipientEmails, eb.bccEmails...)
+	e.body = []byte(body)
+
+	return e
+}
+
+type Email interface {
+	Send(*EmailServer, *AuthPair) error
+	OpenInBrowser(string) error
+	GetRecipients() []string
+}
+
+type email struct {
+	fromEmail string
+	toEmails  []string
+	body      []byte
+}
+
+func (e *email) Send(s *EmailServer, ap *AuthPair) error {
+	serverInfo := fmt.Sprintf("%s:%d", s.Hostname, s.Port)
+	auth := smtp.PlainAuth("", ap.Login, ap.Password, s.Hostname)
+
+	if err := smtp.SendMail(serverInfo, auth, e.fromEmail, e.toEmails, e.body); err != nil {
 		return err
 	}
+
 	return nil
 }
 
-func (m *PlainEmail) DryRun(browser string) error {
+func (e *email) OpenInBrowser(browserName string) error {
 	html := append(
 		[]byte(`<html><head><meta charset="UTF-8"></head>`),
-		m.ExportHTML()...,
+		e.body...,
 	)
 	html = append(html, []byte(`</html>`)...)
 
@@ -91,10 +147,14 @@ func (m *PlainEmail) DryRun(browser string) error {
 		return err
 	}
 
-	cmd := exec.Command(browser, tmpfile.Name())
+	cmd := exec.Command(browserName, tmpfile.Name())
 	if err := cmd.Run(); err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func (e *email) GetRecipients() []string {
+	return e.toEmails
 }

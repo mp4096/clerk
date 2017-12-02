@@ -8,15 +8,7 @@ import (
 	ck "github.com/mp4096/clerk"
 )
 
-type Action uint8
-
-const (
-	NOTHING Action = iota
-	APPROVE
-	DISTRIBUTE
-)
-
-var a Action = NOTHING
+var a ck.Action = ck.NOTHING
 var send = false
 var fs = flag.NewFlagSet("clerk", flag.ExitOnError)
 var configFilename = ""
@@ -56,9 +48,9 @@ func main() {
 
 	switch os.Args[1] {
 	case "approve":
-		a = APPROVE
+		a = ck.APPROVE
 	case "distribute":
-		a = DISTRIBUTE
+		a = ck.DISTRIBUTE
 	default:
 		fmt.Printf("%q is not valid command.\n", os.Args[1])
 		os.Exit(2)
@@ -71,7 +63,6 @@ func main() {
 	}
 
 	// TODO: Find latest Markdown file if none was specified
-
 	c := new(ck.Config)
 	errConf := c.ImportFromFile(configFilename)
 	if errConf != nil {
@@ -82,22 +73,9 @@ func main() {
 
 	fmt.Println("Hello,", c.Author.Name)
 
-	switch a {
-	case APPROVE:
-		if err := ck.HandleEmailApprove(mdFilename, send, c); err != nil {
-			fmt.Println("Error sending email")
-			fmt.Println(err)
-			os.Exit(4)
-		}
-	case DISTRIBUTE:
-		if err := ck.HandleEmailToAll(mdFilename, send, c); err != nil {
-			fmt.Println("Error sending email")
-			fmt.Println(err)
-			os.Exit(4)
-		}
-	// case CONVERT:
-	// TODO
-	default:
-		// must be unreachable
+	if err := ck.ProcessFile(mdFilename, a, send, c); err != nil {
+		fmt.Println("Error sending email")
+		fmt.Println(err)
+		os.Exit(4)
 	}
 }

@@ -15,16 +15,15 @@ var userRegexp = regexp.MustCompile(`(\W)(\@\p{L}+)`)
 
 const colorHighlighting = `$1<b><font color="#ff9933">$2</font></b>`
 
-func MarkdownToHTML(filename string) ([]byte, error) {
+func MarkdownToHTML(filename string) (string, error) {
 	data, err := ioutil.ReadFile(filename)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
 	unsafe := blackfriday.MarkdownCommon(data)
-	html := bluemonday.UGCPolicy().SanitizeBytes(unsafe)
-
-	html = []byte(highlightUsers(string(html)))
+	html := string(bluemonday.UGCPolicy().SanitizeBytes(unsafe))
+	html = highlightUsers(html)
 
 	return html, nil
 }
