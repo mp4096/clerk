@@ -122,11 +122,7 @@ func (e *email) Send(s *EmailServer, ap *authPair) error {
 	serverInfo := fmt.Sprintf("%s:%d", s.Hostname, s.Port)
 	auth := smtp.PlainAuth("", ap.login, ap.password, s.Hostname)
 
-	if err := smtp.SendMail(serverInfo, auth, e.fromEmail, e.toEmails, e.body); err != nil {
-		return err
-	}
-
-	return nil
+	return smtp.SendMail(serverInfo, auth, e.fromEmail, e.toEmails, e.body)
 }
 
 func (e *email) OpenInBrowser(browserName string) error {
@@ -148,11 +144,7 @@ func (e *email) OpenInBrowser(browserName string) error {
 	}
 
 	cmd := exec.Command(browserName, tmpfile.Name())
-	if err := cmd.Run(); err != nil {
-		return err
-	}
-
-	return nil
+	return cmd.Run()
 }
 
 func (e *email) GetRecipients() []string {

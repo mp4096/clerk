@@ -39,9 +39,5 @@ func (c *Config) ImportFromFile(filename string) error {
 		return err
 	}
 
-	if err := yaml.Unmarshal(data, c); err != nil {
-		return err
-	}
-
-	return nil
+	return yaml.Unmarshal(data, c)
 }
