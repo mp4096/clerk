@@ -58,7 +58,7 @@ release_binaries: ## Compile binaries for Linux, macOS and Windows; generate dig
 	sha512sum clerk >> release_info.md
 	echo "\`\`\`\n" >> release_info.md
 	tar -cvzf clerk_darwin_x64.tar.gz clerk
-	echo "\n## macOS x64\n" >> release_info.md
+	echo "\n## Windows x64\n" >> release_info.md
 	$(MAKE) -f $(THIS_FILE) xcompile_win
 	echo "SHA256 digest:\n" >> release_info.md
 	echo "\`\`\`" >> release_info.md
