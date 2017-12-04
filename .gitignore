@@ -1,3 +1,8 @@
+# Compressed binaries
+*.tar.gz
+*.zip
+release_info.md
+
 # Compiled Object files, Static and Dynamic libs (Shared Objects)
 clerk
 *.o
