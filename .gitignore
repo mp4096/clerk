@@ -28,8 +28,5 @@ _testmain.go
 *.clerk.yml
 *.clerk.yaml
 
-# Markdown files
-*.md
-
 # Email previews
 *clerk_preview_*
