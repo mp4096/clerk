@@ -13,15 +13,13 @@ fetch_dependencies: ## Fetch all dependencies
 	go get -t ./...
 
 fmt: ## Call go fmt in all directories
-	go fmt .
-	go fmt ./cmd/clerk/
+	go fmt ./...
 
 delete_previews: ## Delete previews
 	find . -type f -name 'clerk_preview_*' -delete
 
 vet: ## Call go vet in all directories
-	go vet .
-	go vet ./cmd/clerk/
+	go vet ./...
 
 .PHONY: build install xcompile_win fmt delete_previews help vet fetch_dependencies
 
