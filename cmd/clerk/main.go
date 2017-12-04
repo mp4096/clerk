@@ -8,6 +8,13 @@ import (
 	"github.com/mp4096/clerk"
 )
 
+const (
+	INVALID_COMMAND            int = 1
+	NO_CONFIG_FILE_SPECIFIED   int = 2
+	COULD_NOT_OPEN_CONFIG_FILE int = 4
+	COULD_NOT_SEND_OR_PREVIEW  int = 8
+)
+
 var a clerk.Action = clerk.NOTHING
 var send = false
 var fs = flag.NewFlagSet("clerk", flag.ExitOnError)
@@ -53,13 +60,13 @@ func main() {
 		return
 	default:
 		fmt.Printf("%q is not valid command.\n", os.Args[1])
-		os.Exit(2)
+		os.Exit(INVALID_COMMAND)
 	}
 	fs.Parse(os.Args[2:])
 
 	if len(configFilename) == 0 {
-		fmt.Println("Error: config file not specified")
-		os.Exit(3)
+		fmt.Println("Config file not specified")
+		os.Exit(NO_CONFIG_FILE_SPECIFIED)
 	}
 
 	// TODO: Find latest Markdown file if none was specified
@@ -68,15 +75,15 @@ func main() {
 	if errConf != nil {
 		fmt.Println("Error opening config file")
 		fmt.Println(errConf)
-		os.Exit(3)
+		os.Exit(COULD_NOT_OPEN_CONFIG_FILE)
 	}
 
 	fmt.Println("Hello,", c.Author.Name)
 
 	if err := clerk.ProcessFile(mdFilename, a, send, c); err != nil {
-		fmt.Println("Error sending email")
+		fmt.Println("Error while sending email or opening preview")
 		fmt.Println(err)
-		os.Exit(4)
+		os.Exit(COULD_NOT_SEND_OR_PREVIEW)
 	}
 }
 
