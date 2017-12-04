@@ -26,10 +26,10 @@ type EmailServer struct {
 }
 
 type Config struct {
-	Email_server    EmailServer
-	Author          Author
-	Distribute_list Recipients
-	Approve_list    Recipients
+	EmailServer    EmailServer `yaml:"email_server"`
+	Author         Author
+	DistributeList Recipients `yaml:"distribute_list"`
+	ApproveList    Recipients `yaml:"approve_list"`
 }
 
 // ImportFromFile reads configuration from a YAML file.

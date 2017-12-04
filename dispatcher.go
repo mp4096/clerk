@@ -28,9 +28,9 @@ func ProcessFile(filename string, a Action, send bool, c *Config) error {
 	builder := NewEmail().AddAuthor(&c.Author).AddContent(md)
 	switch a {
 	case APPROVE:
-		builder = builder.AddRecipients(&c.Approve_list)
+		builder = builder.AddRecipients(&c.ApproveList)
 	case DISTRIBUTE:
-		builder = builder.AddRecipients(&c.Distribute_list)
+		builder = builder.AddRecipients(&c.DistributeList)
 	default:
 		return errors.New("Unknown action type.")
 	}
@@ -38,10 +38,10 @@ func ProcessFile(filename string, a Action, send bool, c *Config) error {
 
 	if send {
 		fmt.Printf("Will send to %v\n", email.GetRecipients())
-		fmt.Printf("Please enter your credentials for \"%s\"\n", c.Email_server.Hostname)
+		fmt.Printf("Please enter your credentials for \"%s\"\n", c.EmailServer.Hostname)
 		ap := new(authPair)
 		ap.prompt()
-		if err := email.Send(&c.Email_server, ap); err != nil {
+		if err := email.Send(&c.EmailServer, ap); err != nil {
 			return err
 		}
 	} else {
