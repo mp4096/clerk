@@ -7,3 +7,8 @@ go:
 matrix:
   allow_failures:
     - go: master
+
+script:
+  - make vet
+  - make install
+  - make build
