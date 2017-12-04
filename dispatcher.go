@@ -38,13 +38,14 @@ func ProcessFile(filename string, a Action, send bool, c *Config) error {
 
 	if send {
 		fmt.Printf("Will send to %v\n", email.GetRecipients())
+		fmt.Printf("Please enter your credentials for \"%s\"\n", c.Email_server.Hostname)
 		ap := new(authPair)
 		ap.prompt()
 		if err := email.Send(&c.Email_server, ap); err != nil {
 			return err
 		}
 	} else {
-		fmt.Println("Opening preview in browser")
+		fmt.Printf("Send flag not set: opening preview in \"%s\"\n", c.Author.Browser)
 		if err := email.OpenInBrowser(c.Author.Browser); err != nil {
 			return err
 		}

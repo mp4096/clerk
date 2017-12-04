@@ -17,7 +17,7 @@ var mdFilename = ""
 func init() {
 	fs.BoolVar(&send, "s", false, "Send emails; dry run otherwise")
 	fs.StringVar(&configFilename, "c", "", "Config filename")
-	fs.StringVar(&mdFilename, "m", "", "Markdown filename; use latest if not specified")
+	fs.StringVar(&mdFilename, "m", "", "Markdown filename")
 }
 
 func main() {
@@ -39,10 +39,7 @@ func main() {
 	//   - send these emails
 
 	if len(os.Args) == 1 {
-		fmt.Println("usage: clerk <command> [<args>]")
-		fmt.Println("Available commands are: ")
-		fmt.Println(" approve     Send a request for approval")
-		fmt.Println(" distribute  Distribute the transcripts")
+		printHelp()
 		return
 	}
 
@@ -51,6 +48,9 @@ func main() {
 		a = clerk.APPROVE
 	case "distribute":
 		a = clerk.DISTRIBUTE
+	case "help":
+		printHelp()
+		return
 	default:
 		fmt.Printf("%q is not valid command.\n", os.Args[1])
 		os.Exit(2)
@@ -78,4 +78,13 @@ func main() {
 		fmt.Println(err)
 		os.Exit(4)
 	}
+}
+
+func printHelp() {
+	fmt.Println("usage: clerk <command> [<args>]")
+	fmt.Println("Available commands are: ")
+	fmt.Println(" approve     Send a request for approval")
+	fmt.Println(" distribute  Distribute the transcripts")
+	fmt.Println(" help        Print this message")
+	fmt.Println("Call clerk <command> -h for more information about specific command usage")
 }
