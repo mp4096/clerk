@@ -28,6 +28,10 @@ vet: ## Call go vet in all directories
 release_binaries: ## Compile binaries for Linux, macOS and Windows; generate digests
 	rm -f release_info.md clerk clerk.exe
 	echo "# Clerk binaries\n" >> release_info.md
+	echo "git revision:\n" >> release_info.md
+	echo "\`\`\`" >> release_info.md
+	git rev-parse HEAD >> release_info.md
+	echo "\`\`\`\n" >> release_info.md
 	echo "Go version:\n" >> release_info.md
 	echo "\`\`\`" >> release_info.md
 	go version >> release_info.md
