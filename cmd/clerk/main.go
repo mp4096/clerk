@@ -28,23 +28,6 @@ func init() {
 }
 
 func main() {
-
-	// Program flow:
-	// - process input arguments :check:
-	// - import configuration :check:
-	// - read in and process the markdown file
-	// - if not in dry run, read in the credentials
-	// - if dry run, describe your actions and bail out
-	// - IF APPROVE:
-	//   - create an email object
-	//   - send this email
-	// - IF DISTRIBUTE:
-	//   - create an email object (general transcript)
-	//   - send this email
-	//   - analyze individual recipients
-	//   - create N customised email objects
-	//   - send these emails
-
 	if len(os.Args) == 1 {
 		printHelp()
 		return
