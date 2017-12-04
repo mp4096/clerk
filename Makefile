@@ -1,3 +1,5 @@
+.DEFAULT_GOAL := build
+
 build: ## Build
 	go build -v github.com/mp4096/clerk/cmd/clerk
 

@@ -1,5 +1,7 @@
 # Clerk
 
+[![Build Status](https://travis-ci.org/mp4096/clerk.svg?branch=master)](https://travis-ci.org/mp4096/clerk)
+
 Clerk sends your Markdown notes via email.
 I use it for distributing meeting transcripts.
 
