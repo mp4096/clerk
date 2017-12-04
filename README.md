@@ -11,6 +11,18 @@ I use it for distributing meeting transcripts.
 [which uses TLS if possible](https://golang.org/pkg/net/smtp/#SendMail).
 Still, just to be safe, I explicitly discourage using `clerk` for mission-critical information.
 
+## Installation
+
+### From source on Linux
+
+```
+$ make install
+```
+
+### Binaries
+
+You can get them from GitHub releases.
+
 ## Usage example
 
 Suppose you've written a note in Markdown and saved it to `2017-12-04_note.md`.
