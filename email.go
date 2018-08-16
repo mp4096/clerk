@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/hoisie/mustache"
+	"github.com/cbroglie/mustache"
 	"github.com/howeyc/gopass"
 )
 
@@ -37,7 +37,7 @@ type EmailBuilder interface {
 	AddAuthor(*Author) EmailBuilder
 	AddRecipients(*Recipients) EmailBuilder
 	AddContent(string) EmailBuilder
-	Build(map[string]string) Email
+	Build(map[string]string) (Email, error)
 }
 
 // Email builder struct containing all the nitty-gritty details and subfields of our custom email
@@ -81,17 +81,30 @@ func (eb *emailBuilder) AddContent(s string) EmailBuilder {
 	return eb
 }
 
-func (eb *emailBuilder) Build(context map[string]string) Email {
+func (eb *emailBuilder) Build(context map[string]string) (Email, error) {
+	mustache.AllowMissingVariables = false
+
+	renderedSubject, err := mustache.Render(eb.subject, context)
+	if err != nil {
+		return nil, err
+	}
 	headerTemplate := "From: " + EncodeRfc1342(eb.fromName) + " <" + eb.fromEmail + ">\r\n"
 	headerTemplate += "To: " + strings.Join(eb.recipientEmails, ", ") + "\r\n"
-	headerTemplate += "Subject: " + EncodeRfc1342(mustache.Render(eb.subject, context)) + "\r\n"
+	headerTemplate += "Subject: " + EncodeRfc1342(renderedSubject) + "\r\n"
 	headerTemplate += "MIME-version: 1.0;\r\nContent-Type: text/html; charset=\"UTF-8\";\r\n\r\n"
-	header := mustache.Render(headerTemplate, context)
+	header, err := mustache.Render(headerTemplate, context)
+	if err != nil {
+		return nil, err
+	}
 
-	body := "<p>" + eb.salutation + "</p>\r\n"
-	body += "<p>" + mustache.Render(eb.preludeText, context) + "</p>\r\n"
-	body += "<p>" + eb.notice + "</p>\r\n\r\n"
-	body += mustache.Render(eb.mailText, context)
+	bodyTemplate := "<p>" + eb.salutation + "</p>\r\n"
+	bodyTemplate += "<p>" + eb.preludeText + "</p>\r\n"
+	bodyTemplate += "<p>" + eb.notice + "</p>\r\n\r\n"
+	bodyTemplate += eb.mailText
+	body, err := mustache.Render(bodyTemplate, context)
+	if err != nil {
+		return nil, err
+	}
 
 	e := new(email)
 	e.fromEmail = eb.fromEmail
@@ -99,7 +112,7 @@ func (eb *emailBuilder) Build(context map[string]string) Email {
 	e.header = []byte(header)
 	e.body = []byte(body)
 
-	return e
+	return e, nil
 }
 
 type Email interface {
