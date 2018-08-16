@@ -34,7 +34,7 @@ func ProcessFile(filename string, a Action, send bool, c *Config) error {
 	default:
 		return errors.New("Unknown action type.")
 	}
-	email := builder.FillInContext(context).Build()
+	email := builder.Build(context)
 
 	if send {
 		fmt.Printf("Will send to %v\n", email.GetRecipients())

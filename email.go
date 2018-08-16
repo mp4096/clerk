@@ -37,8 +37,7 @@ type EmailBuilder interface {
 	AddAuthor(*Author) EmailBuilder
 	AddRecipients(*Recipients) EmailBuilder
 	AddContent(string) EmailBuilder
-	FillInContext(map[string]string) EmailBuilder
-	Build() Email
+	Build(map[string]string) Email
 }
 
 // Email builder struct containing all the nitty-gritty details and subfields of our custom email
@@ -82,27 +81,22 @@ func (eb *emailBuilder) AddContent(s string) EmailBuilder {
 	return eb
 }
 
-func (eb *emailBuilder) FillInContext(context map[string]string) EmailBuilder {
-	eb.subject = mustache.Render(eb.subject, context)
-	eb.headerText = mustache.Render(eb.headerText, context)
-	eb.mailText = mustache.Render(eb.mailText, context)
+func (eb *emailBuilder) Build(context map[string]string) Email {
+	headerTemplate := "From: " + EncodeRfc1342(eb.fromName) + " <" + eb.fromEmail + ">\r\n"
+	headerTemplate += "To: " + strings.Join(eb.recipientEmails, ", ") + "\r\n"
+	headerTemplate += "Subject: " + EncodeRfc1342(mustache.Render(eb.subject, context)) + "\r\n"
+	headerTemplate += "MIME-version: 1.0;\r\nContent-Type: text/html; charset=\"UTF-8\";\r\n\r\n"
+	header := mustache.Render(headerTemplate, context)
 
-	return eb
-}
-
-func (eb *emailBuilder) Build() Email {
-	body := "From: " + eb.fromName + "<" + eb.fromEmail + ">\r\n"
-	body += "To: " + strings.Join(eb.recipientEmails, ", ") + "\r\n"
-	body += "Subject: " + eb.subject + "\r\n"
-	body += "MIME-version: 1.0;\r\nContent-Type: text/html; charset=\"UTF-8\";\r\n\r\n"
-	body += "<p>" + eb.salutation + "</p>\r\n"
-	body += "<p>" + eb.headerText + "</p>\r\n"
+	body := "<p>" + eb.salutation + "</p>\r\n"
+	body += "<p>" + mustache.Render(eb.headerText, context) + "</p>\r\n"
 	body += "<p>" + eb.notice + "</p>\r\n\r\n"
-	body += eb.mailText
+	body += mustache.Render(eb.mailText, context)
 
 	e := new(email)
 	e.fromEmail = eb.fromEmail
 	e.toEmails = append(eb.recipientEmails, eb.bccEmails...)
+	e.header = []byte(header)
 	e.body = []byte(body)
 
 	return e
@@ -117,6 +111,7 @@ type Email interface {
 type email struct {
 	fromEmail string
 	toEmails  []string
+	header    []byte
 	body      []byte
 }
 
@@ -124,15 +119,17 @@ func (e *email) Send(s *EmailServer, ap *authPair) error {
 	serverInfo := fmt.Sprintf("%s:%d", s.Hostname, s.Port)
 	auth := smtp.PlainAuth("", ap.login, ap.password, s.Hostname)
 
-	return smtp.SendMail(serverInfo, auth, e.fromEmail, e.toEmails, e.body)
+	return smtp.SendMail(serverInfo, auth, e.fromEmail, e.toEmails, append(e.header, e.body...))
 }
 
 func (e *email) OpenInBrowser(browserName string) error {
 	html := append(
-		[]byte(`<html><head><meta charset="UTF-8"></head>`),
-		e.body...,
+		[]byte("<html><head><meta charset=\"UTF-8\"></head>\n<pre>"),
+		EscapeAngleBrackets(e.header)...,
 	)
-	html = append(html, []byte(`</html>`)...)
+	html = append(html, []byte("</pre>\n")...)
+	html = append(html, e.body...)
+	html = append(html, []byte("</html>")...)
 
 	tmpfile, err := ioutil.TempFile(".", "clerk_preview_")
 	if err != nil {
