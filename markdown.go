@@ -13,7 +13,7 @@ import (
 // \p{L}+ - at least one Unicode word character, greedily
 var userRegexp = regexp.MustCompile(`(\W)(\@\p{L}+)`)
 
-const colorHighlighting = `$1<b><font color="#ff9933">$2</font></b>`
+const colorHighlighting = `$1<span style="font-weight: bold; color: #e34234;">$2</span>`
 
 func markdownToHTML(filename string) (string, error) {
 	data, err := ioutil.ReadFile(filename)
