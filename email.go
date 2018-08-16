@@ -88,9 +88,9 @@ func (eb *emailBuilder) Build(context map[string]string) (Email, error) {
 	if err != nil {
 		return nil, err
 	}
-	headerTemplate := "From: " + EncodeRfc1342(eb.fromName) + " <" + eb.fromEmail + ">\r\n"
+	headerTemplate := "From: " + encodeRfc1342(eb.fromName) + " <" + eb.fromEmail + ">\r\n"
 	headerTemplate += "To: " + strings.Join(eb.recipientEmails, ", ") + "\r\n"
-	headerTemplate += "Subject: " + EncodeRfc1342(renderedSubject) + "\r\n"
+	headerTemplate += "Subject: " + encodeRfc1342(renderedSubject) + "\r\n"
 	headerTemplate += "MIME-version: 1.0;\r\nContent-Type: text/html; charset=\"UTF-8\";\r\n\r\n"
 	header, err := mustache.Render(headerTemplate, context)
 	if err != nil {
@@ -138,7 +138,7 @@ func (e *email) Send(s *EmailServer, ap *authPair) error {
 func (e *email) OpenInBrowser(browserName string) error {
 	html := append(
 		[]byte("<html><head><meta charset=\"UTF-8\"></head>\n<pre>"),
-		EscapeAngleBrackets(e.header)...,
+		escapeAngleBrackets(e.header)...,
 	)
 	html = append(html, []byte("</pre>\n")...)
 	html = append(html, e.body...)
