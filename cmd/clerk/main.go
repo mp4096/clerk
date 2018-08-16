@@ -43,7 +43,7 @@ func main() {
 		printHelp()
 		return
 	default:
-		fmt.Printf("%q is not valid command.\n", os.Args[1])
+		fmt.Printf("%q is not valid command\n", os.Args[1])
 		os.Exit(invalidCommand)
 	}
 	fs.Parse(os.Args[2:])
