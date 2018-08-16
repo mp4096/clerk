@@ -9,11 +9,12 @@ import (
 )
 
 const (
-	ok                     int = 0
-	noConfigFileSpecified  int = 3
-	invalidCommand         int = 4
-	couldNotOpenConfigFile int = 5
-	couldNotSendOrPreview  int = 6
+	ok                       int = 0
+	noConfigFileSpecified    int = 3
+	invalidCommand           int = 4
+	couldNotOpenConfigFile   int = 5
+	couldNotSendOrPreview    int = 6
+	couldNotFindMarkdownFile int = 7
 )
 
 var a clerk.Action = clerk.Nothing
@@ -25,7 +26,7 @@ var mdFilename = ""
 func init() {
 	fs.BoolVar(&send, "s", false, "Send emails; dry run otherwise")
 	fs.StringVar(&configFilename, "c", "", "Config filename")
-	fs.StringVar(&mdFilename, "m", "", "Markdown filename")
+	fs.StringVar(&mdFilename, "m", "", "Markdown filename; if not specified, will try to use the latest file starting with an ISO timestamp")
 }
 
 func main() {
@@ -53,7 +54,6 @@ func main() {
 		os.Exit(noConfigFileSpecified)
 	}
 
-	// TODO: Find latest Markdown file if none was specified
 	c := new(clerk.Config)
 	errConf := c.ImportFromFile(configFilename)
 	if errConf != nil {
@@ -63,6 +63,17 @@ func main() {
 	}
 
 	fmt.Println("Hello,", c.Author.Name)
+
+	if len(mdFilename) == 0 {
+		fmt.Println("Markdown file not specified - will try to use the latest one")
+		mdFilenameAuto, err := clerk.FindLatestFile()
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(couldNotFindMarkdownFile)
+		}
+		fmt.Printf("Found file '%s'\n", mdFilenameAuto)
+		mdFilename = mdFilenameAuto
+	}
 
 	if err := clerk.ProcessFile(mdFilename, a, send, c); err != nil {
 		fmt.Println("Error while sending email or opening preview")
