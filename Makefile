@@ -1,11 +1,13 @@
 .DEFAULT_GOAL := build
-THIS_FILE := $(lastword $(MAKEFILE_LIST))
 
 build: fetch_dependencies ## Build
 	go build -v github.com/mp4096/clerk/cmd/clerk
 
 install: fetch_dependencies ## Build and install
 	go install -v github.com/mp4096/clerk/cmd/clerk
+
+xcompile_linux: fetch_dependencies ## Cross-compile for Linux x64
+	env GOOS=linux GOARCH=amd64 go build -v github.com/mp4096/clerk/cmd/clerk
 
 xcompile_win: fetch_dependencies ## Cross-compile for Windows x64
 	env GOOS=windows GOARCH=amd64 go build -v github.com/mp4096/clerk/cmd/clerk
@@ -18,6 +20,7 @@ fetch_dependencies: ## Fetch all dependencies
 
 fmt: fetch_dependencies ## Call go fmt in all directories
 	go fmt ./...
+	gofmt -w -s ./..
 
 delete_previews: ## Delete previews
 	find . -type f -name 'clerk_preview_*' -delete
@@ -26,51 +29,9 @@ vet: fetch_dependencies ## Call go vet in all directories
 	go vet ./...
 
 release_binaries: ## Compile binaries for Linux, macOS and Windows; generate digests
-	rm -f release_info.md clerk clerk.exe
-	echo "# Clerk binaries\n" >> release_info.md
-	echo "git revision:\n" >> release_info.md
-	echo "\`\`\`" >> release_info.md
-	git rev-parse HEAD >> release_info.md
-	echo "\`\`\`\n" >> release_info.md
-	echo "Go version:\n" >> release_info.md
-	echo "\`\`\`" >> release_info.md
-	go version >> release_info.md
-	echo "\`\`\`\n" >> release_info.md
-	echo "\n## Linux x64\n" >> release_info.md
-	$(MAKE) -f $(THIS_FILE) build
-	echo "SHA256 digest:\n" >> release_info.md
-	echo "\`\`\`" >> release_info.md
-	sha256sum clerk >> release_info.md
-	echo "\`\`\`\n" >> release_info.md
-	echo "SHA512 digest:\n" >> release_info.md
-	echo "\`\`\`" >> release_info.md
-	sha512sum clerk >> release_info.md
-	echo "\`\`\`\n" >> release_info.md
-	tar -cvzf clerk_linux_x64.tar.gz clerk
-	echo "\n## macOS x64\n" >> release_info.md
-	$(MAKE) -f $(THIS_FILE) xcompile_mac
-	echo "SHA256 digest:\n" >> release_info.md
-	echo "\`\`\`" >> release_info.md
-	sha256sum clerk >> release_info.md
-	echo "\`\`\`\n" >> release_info.md
-	echo "SHA512 digest:\n" >> release_info.md
-	echo "\`\`\`" >> release_info.md
-	sha512sum clerk >> release_info.md
-	echo "\`\`\`\n" >> release_info.md
-	tar -cvzf clerk_darwin_x64.tar.gz clerk
-	echo "\n## Windows x64\n" >> release_info.md
-	$(MAKE) -f $(THIS_FILE) xcompile_win
-	echo "SHA256 digest:\n" >> release_info.md
-	echo "\`\`\`" >> release_info.md
-	sha256sum clerk.exe >> release_info.md
-	echo "\`\`\`\n" >> release_info.md
-	echo "SHA512 digest:\n" >> release_info.md
-	echo "\`\`\`" >> release_info.md
-	sha512sum clerk.exe >> release_info.md
-	echo "\`\`\`" >> release_info.md
-	zip clerk_windows_x64.zip clerk.exe
+	./make_binaries.sh
 
-.PHONY: build install xcompile_win xcompile_mac \
+.PHONY: build install xcompile_linux xcompile_win xcompile_mac \
 	fmt delete_previews help vet fetch_dependencies release_binaries
 
 help:
