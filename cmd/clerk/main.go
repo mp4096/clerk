@@ -9,13 +9,14 @@ import (
 )
 
 const (
-	INVALID_COMMAND            int = 1
-	NO_CONFIG_FILE_SPECIFIED   int = 2
-	COULD_NOT_OPEN_CONFIG_FILE int = 4
-	COULD_NOT_SEND_OR_PREVIEW  int = 8
+	ok                     int = 0
+	noConfigFileSpecified  int = 3
+	invalidCommand         int = 4
+	couldNotOpenConfigFile int = 5
+	couldNotSendOrPreview  int = 6
 )
 
-var a clerk.Action = clerk.NOTHING
+var a clerk.Action = clerk.Nothing
 var send = false
 var fs = flag.NewFlagSet("clerk", flag.ExitOnError)
 var configFilename = ""
@@ -35,21 +36,21 @@ func main() {
 
 	switch os.Args[1] {
 	case "approve":
-		a = clerk.APPROVE
+		a = clerk.Approve
 	case "distribute":
-		a = clerk.DISTRIBUTE
+		a = clerk.Distribute
 	case "help":
 		printHelp()
 		return
 	default:
 		fmt.Printf("%q is not valid command.\n", os.Args[1])
-		os.Exit(INVALID_COMMAND)
+		os.Exit(invalidCommand)
 	}
 	fs.Parse(os.Args[2:])
 
 	if len(configFilename) == 0 {
 		fmt.Println("Config file not specified")
-		os.Exit(NO_CONFIG_FILE_SPECIFIED)
+		os.Exit(noConfigFileSpecified)
 	}
 
 	// TODO: Find latest Markdown file if none was specified
@@ -58,7 +59,7 @@ func main() {
 	if errConf != nil {
 		fmt.Println("Error opening config file")
 		fmt.Println(errConf)
-		os.Exit(COULD_NOT_OPEN_CONFIG_FILE)
+		os.Exit(couldNotOpenConfigFile)
 	}
 
 	fmt.Println("Hello,", c.Author.Name)
@@ -66,7 +67,7 @@ func main() {
 	if err := clerk.ProcessFile(mdFilename, a, send, c); err != nil {
 		fmt.Println("Error while sending email or opening preview")
 		fmt.Println(err)
-		os.Exit(COULD_NOT_SEND_OR_PREVIEW)
+		os.Exit(couldNotSendOrPreview)
 	}
 }
 

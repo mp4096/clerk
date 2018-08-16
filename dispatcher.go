@@ -8,9 +8,9 @@ import (
 type Action uint8
 
 const (
-	NOTHING Action = iota
-	APPROVE
-	DISTRIBUTE
+	Nothing Action = iota
+	Approve
+	Distribute
 )
 
 func ProcessFile(filename string, a Action, send bool, c *Config) error {
@@ -27,9 +27,9 @@ func ProcessFile(filename string, a Action, send bool, c *Config) error {
 
 	builder := NewEmail().AddAuthor(&c.Author).AddContent(md)
 	switch a {
-	case APPROVE:
+	case Approve:
 		builder = builder.AddRecipients(&c.ApproveList)
-	case DISTRIBUTE:
+	case Distribute:
 		builder = builder.AddRecipients(&c.DistributeList)
 	default:
 		return errors.New("Unknown action type.")
