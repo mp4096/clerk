@@ -24,7 +24,6 @@ func FindLatestFile() (string, error) {
 
 	if len(latestFilename) == 0 {
 		return "", errors.New("Could not find a suitable file")
-	} else {
-		return latestFilename, nil
 	}
+	return latestFilename, nil
 }
