@@ -48,7 +48,7 @@ type emailBuilder struct {
 	bccEmails       []string
 	subject         string
 	salutation      string
-	headerText      string
+	preludeText     string
 	mailText        string
 	notice          string
 }
@@ -70,7 +70,7 @@ func (eb *emailBuilder) AddRecipients(rs *Recipients) EmailBuilder {
 	eb.recipientEmails = rs.Emails
 	eb.subject = rs.Subject
 	eb.salutation = rs.Salutation
-	eb.headerText = rs.Text
+	eb.preludeText = rs.Text
 
 	return eb
 }
@@ -89,7 +89,7 @@ func (eb *emailBuilder) Build(context map[string]string) Email {
 	header := mustache.Render(headerTemplate, context)
 
 	body := "<p>" + eb.salutation + "</p>\r\n"
-	body += "<p>" + mustache.Render(eb.headerText, context) + "</p>\r\n"
+	body += "<p>" + mustache.Render(eb.preludeText, context) + "</p>\r\n"
 	body += "<p>" + eb.notice + "</p>\r\n\r\n"
 	body += mustache.Render(eb.mailText, context)
 
