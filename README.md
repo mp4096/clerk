@@ -2,6 +2,7 @@
 
 [![Build Status](https://travis-ci.org/mp4096/clerk.svg?branch=master)](https://travis-ci.org/mp4096/clerk)
 [![Go Report Card](https://goreportcard.com/badge/github.com/mp4096/clerk)](https://goreportcard.com/report/github.com/mp4096/clerk)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/16f9f9b962974964ac7fd3858e7128b1)](https://www.codacy.com/app/mp4096/clerk)
 
 Clerk sends your Markdown notes via email.
 I use it for distributing meeting transcripts.
