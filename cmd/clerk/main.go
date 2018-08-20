@@ -22,6 +22,8 @@ var send = false
 var fs = flag.NewFlagSet("clerk", flag.ExitOnError)
 var configFilename = ""
 var mdFilename = ""
+var revision = "undefined revision"
+var buildTime = "undefined build time"
 
 func init() {
 	fs.BoolVar(&send, "s", false, "Send emails; dry run otherwise")
@@ -83,6 +85,7 @@ func main() {
 }
 
 func printHelp() {
+	fmt.Println("clerk (" + buildTime + " " + revision + ")")
 	fmt.Println("usage: clerk <command> [<args>]")
 	fmt.Println("Available commands are: ")
 	fmt.Println(" approve     Send a request for approval")

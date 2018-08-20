@@ -1,19 +1,22 @@
 .DEFAULT_GOAL := build
+timestamp = $(shell date -u '+%Y-%m-%dT%H:%M:%SZ')
+git_revision = $(shell git describe --always --abbrev=10 --dirty)
+add_metadata = -ldflags "-X main.buildTime=$(timestamp) -X main.revision=$(git_revision)"
 
 build: fetch_dependencies ## Build
-	go build -v github.com/mp4096/clerk/cmd/clerk
+	go build $(add_metadata) -v github.com/mp4096/clerk/cmd/clerk
 
 install: fetch_dependencies ## Build and install
-	go install -v github.com/mp4096/clerk/cmd/clerk
+	go install $(add_metadata) -v github.com/mp4096/clerk/cmd/clerk
 
 xcompile_linux: fetch_dependencies ## Cross-compile for Linux x64
-	env GOOS=linux GOARCH=amd64 go build -v github.com/mp4096/clerk/cmd/clerk
+	env GOOS=linux GOARCH=amd64 go build $(add_metadata) -v github.com/mp4096/clerk/cmd/clerk
 
 xcompile_win: fetch_dependencies ## Cross-compile for Windows x64
-	env GOOS=windows GOARCH=amd64 go build -v github.com/mp4096/clerk/cmd/clerk
+	env GOOS=windows GOARCH=amd64 go build $(add_metadata) -v github.com/mp4096/clerk/cmd/clerk
 
 xcompile_mac: fetch_dependencies ## Cross-compile for macOS x64
-	env GOOS=darwin GOARCH=amd64 go build -v github.com/mp4096/clerk/cmd/clerk
+	env GOOS=darwin GOARCH=amd64 go build $(add_metadata) -v github.com/mp4096/clerk/cmd/clerk
 
 fetch_dependencies: ## Fetch all dependencies
 	go get -t ./...
